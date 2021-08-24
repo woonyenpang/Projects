@@ -1,0 +1,292 @@
+---
+title: "Assignment 1"
+author: "Pang Woon Yen S2036711"
+date: "04/04/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Walmart Sales Data Analysis {.tabset .tabset-fade .tabset-pills}
+
+<!-- define some style that we will use frequently-->
+```{css, echo=FALSE}
+.background {
+  background-color: azure;
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.header_font {
+  color: burlywood;
+  font-weight: bold;
+}
+
+.coral-highlight {
+  color: coral;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.highlight {
+  color: green;
+  font-style: italic;
+}
+
+.watch-out {
+  background-color: lightpink;
+  border: 3px solid red;
+  font-weight: bold;
+}
+```
+
+<!-- Tab 1 -->
+### <h class="header_font">Introduction</h>
+
+<div class="background">
+| 
+| **Data frame** is a table of two dimensions which form a spreadsheet in R.
+| It contains rows and columns. 
+| Each **row** (horizontally) is the values set obtained from one **observation** or what we called data subject, for instance, a car is one of the observation.
+| On the other hand, a **column** (vertically) is the **attribute** or what we called variable, where it should contain the same data type and same information, for example, car age is a characteristic to describe a car.
+| 
+|     A dataset of <span class="coral-highlight">Walmart's sales data</span> has been gotten from Kaggle. (URL: https://www.kaggle.com/vik2012kvs/walmart-dataretail-analysis/tasks?taskId=2434) The dataset covers historical sales from 2010-02-05 to 2021-11-01 rom 45 Walmart stores in the United States. Within this dataset, we can find 8 fields or attributes, namely:
+|     1. _Store_ - the store number
+|     2. _Date_ - the week of sales
+|     3. _Weekly_Sales_ - sales amount for the given store
+|     4. _Holiday_Flag_ - whether the week is a special holiday week 1 - Holiday week, 0 - Non-holiday week
+|     5. _Temperature_ - Temperature on the day of sale
+|     6. _Fuel_Price_ - Cost of fuel in the region
+|     7. _CPI_ - Prevailing consumer price index
+|     8. _Unemployment_ - Prevailing unemployment rate
+| 
+|     There are **6435 observations** in this dataset. We will subset it by selecting only **5 stores** and the date to be within the year of **2011** only.
+</div>
+
+<!-- Tab 2 -->
+### <h class="header_font">Packages Info</h>
+
+<div class="background">
+| There are several R packages to be installed beforehand.
+|     1. dplyr
+|     2. reshape2
+|     3. ggplot2
+|     4. scales
+|     5. corrplot
+|     6. sqldf
+| 
+| <span class="coral-highlight">dplyr</span>:   a grammar of data manipulation - commonly used to mutate a new variable or to summarise multiple rows into single rows by grouping categories. The functions "group_by" and "summarise" are used in this assignment to summarise the weekly sales according to months and stores.
+| 
+| <span class="coral-highlight">reshape2</span>:    a package mainly used to transform data between long and wide format - long format data is without id-variable, using all as measure variables, the data frame has less columns, whereas, wide format data has a column for each variable.
+| For instance, long format data:
+
+```{r}
+df <- data.frame(store=c("A","A","B","B"),week=c(1,2,1,2), value=c(10,50,20,30))
+print(df)
+
+```
+| 
+| Wide format data:
+
+```{r}
+df <- data.frame(store=c("A","B"), week_1=c(10,20), week_2=c(50,30))
+print(df)
+
+```
+| 
+| **_reshape2_** provides functions such as melt() and cast() - _melt_ turns wide format data into long format data, _cast_ turns long format data into wide format data.
+| 
+| <span class="coral-highlight">ggplot2</span>: for data visualisation - ggplot() allows us to customise which kind of graphs (line chart,bar chart etc) to show by selecting the x-axis, y-axis, title and customise the color and layout.
+| 
+| <span class="coral-highlight">scales</span>: a package for scaling, converting from data values to perceptual properties. It is usually used to customise the appearance of axis and legend labels by using _break_ function and _label_ function.
+| 
+| <span class="coral-highlight">corrplot</span>: to display graphical correlation matrix and confidence interval, could be used to determine the correlations between numerical variables.
+| 
+| <span class="coral-highlight">sqldf</span>: to execute queries in R, using select...from data where condition and so on. Good to retrieve data and summarise data.
+
+| Load the packages that we need for data analysis later.
+
+```{r}
+#load the packages which be needed for data analysis later on
+
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+library(scales)
+library(corrplot)
+library(sqldf)
+```
+</div>
+
+<!-- Tab 3 -->
+### <h class="header_font">Data Preparation</h>
+
+<div class="background">
+
+| First, import the dataset to be a data frame and name it "**Sales**"
+
+```{r}
+Sales <- read.csv("./Walmart_Store_sales.csv", header=T)
+print(head(Sales)) #show the sample of the dataset
+```
+
+| Above shown is the *first 6 rows* of the dataset.
+| Let's examine the structure of the data imported.
+
+```{r}
+str(Sales)
+```
+
+| Reformatting the data type of *Store* to be factor, *Date* to be date and *Holiday_Flag* to be factor.
+
+```{r}
+Sales$Store <-as.factor(Sales$Store)
+Sales[[2]] <- as.Date(Sales$Date, "%d-%m-%Y")
+Sales$Holiday_Flag <- as.factor(Sales$Holiday_Flag)
+str(Sales)
+```
+| Now, we are going to subset the dataset to be 5 randomly chosen stores, and the date of sales to be in 2011.
+
+```{r}
+## random_numbers <- sample(1:45, 5, replace=F)
+## print(random_numbers)
+random_numbers <- c(9, 11, 26, 36, 40)
+Sales_subset <- subset(Sales,Store %in% random_numbers & Date >= "2011-01-01" & Date <= "2011-12-31")
+Sales_subset$Store <- droplevels(Sales_subset$Store)
+str(Sales_subset)
+```
+
+| Next, relabel the levels in *Holiday_Flag* to be "Yes" and "No"
+
+```{r}
+levels(Sales_subset$Holiday_Flag) <- c("No", "Yes")
+Sales_subset$Holiday_Flag <- factor(Sales_subset$Holiday_Flag, c("Yes","No"))
+str(Sales_subset$Holiday_Flag)
+```
+
+| Let's have a look on the summary of variables
+
+```{r}
+summary(Sales_subset)
+```
+
+|     Based on the summary of the data subset, there are 5 <span class="highlight">stores</span> chosen randomly and each of the store has 52 rows, which are 52 weeks of data here in the table.
+|     <span class="highlight">Date</span> range is from 2011-01-07 to 2011-12-30 where the subset only included the data within 2011.
+|     <span class="highlight">Weekly Sales</span> is the numeric data which is the sales amount on a particular week of a given store.
+|     In terms of <span class="highlight">Holiday_Flag</span>, there are 20 rows recorded as "Yes", as the data subset are for 5 stores which means only 4 weeks throughout the year had holidays.
+|     <span class="highlight">Temperature</span> of the sales day is also in numeric form with a mean of 54.49 Fahrenheits. 
+|     <span class="highlight">Fuel_Price</span> is averagely around 3.5 bucks and the <span class="highlight">CPI</span> (Customer Price Index) has an average of 134.3 in 2011. The <span class="highlight">unemployment</span> index range is from 4.420 to 10.641.
+|     Let's begin our data analysis of the Walmart sales in the year of 2011 for these 5 stores.
+
+</div>
+
+<!-- Tab 4 -->
+### <h class="header_font">Data Analysis</h>
+
+<div class="background">
+| Now we have the sales data on a _weekly basis_, <span class="highlight">aggregation</span> would allow us to get the **annual sales** for every outlet.
+
+```{r}
+Annual_Sales <- aggregate(Sales_subset$Weekly_Sales, by=list(Store=Sales_subset$Store), FUN=sum)
+
+#Rename the column name
+colnames(Annual_Sales) <- c("Store", "Annual Sales")
+
+#Sort the data to display the annual sales from highest to lowest
+Annual_Sales <- Annual_Sales[order(Annual_Sales$`Annual Sales`, decreasing=T),]
+print(Annual_Sales)
+
+```
+
+|     From the table shown above, first row has the **highest sales** generated in 2011 among these 5 randomly picked stores.
+|     &nbsp;
+|     Next, we can also get the <span class="coral-highlight">monthly sales data</span>.
+
+```{r}
+
+#create a new data frame with monthly sales data
+Monthly_Sales <- Sales_subset %>%
+  group_by(Store, Month = months(Date)) %>%
+  summarise(Monthly_Sales = sum(Weekly_Sales))
+
+#rearrange the month in chronological order
+Monthly_Sales$Month = factor(Monthly_Sales$Month, levels = month.name)
+
+
+#transform the Monthly_Sales data frame to wide format
+dcast(Monthly_Sales, Store ~ Month)
+
+```
+
+| 
+| Let's visualise the **monthly sales data by stores**!
+
+```{r}
+
+#plot a line graph to show monthly sales
+ggplot(data = Monthly_Sales, aes(fill=Store, y=Monthly_Sales, x=Month)) + geom_bar(position="stack", stat="identity") + labs(title = "Monthly Sales by Store") + expand_limits(y=0) + scale_y_continuous(labels=unit_format(unit = "M", scale=1e-6)) +theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1), plot.title=element_text(hjust=0.5))
+```
+
+| 
+| From the stacked bar chart shown above, we can see that <span class="coral-highlight">Store 11</span> has the **highest sales** over the months in 2011, followed by Store 40. We achieved highest sales in **December 2011**, followed by July and April in the year.
+| 
+| A <span class="highlight">correlation matrix</span> can be plot to determine the correlation between all numerical variables.
+
+```{r}
+#create a new data frame with only numerical variables for correlation matrix purpose
+Sales_subset_corr <- Sales_subset[, c(3,5,6,7,8)]
+corrplot(cor(Sales_subset_corr), method="color", type="upper", addCoef.col = "black", mar=c(1,1,1,1))
+
+```
+
+| 
+| Based on the correlation matrix, we can see that there is only significant correlation between <span class="coral-highlight">Temperature</span> and <span class="coral-highlight">CPI</span>. The correlation coefficient of **0.63** indicated that there is a positive correlation between these two variables, when temperature increases, the CPI tends to increase, and vice versa. 
+| 
+| Table below shows the <span class="highlight">mean and standard deviation</span> of weekly sales at store level. Store 11 has the **highest standard deviation**, indicated the weekly sales vary a lot at this store.
+
+```{r}
+#find the mean and standard deviation by groups
+Sales_subset %>% group_by(Store) %>% summarise(Mean_sales = mean(Weekly_Sales), Std_dev = sd(Weekly_Sales, na.rm=F))
+
+#draw a boxplot to see whether there is outlier in the weekly sales
+boxplot(Sales_subset$Weekly_Sales, main= "Mean Weekly Sales by Store",
+        xlab="Weekly_Sales", col="orange", border="brown", horizontal=T, notch=T)
+
+#print the maximum weekly sales which is the outlier
+print(Sales_subset[which.max(Sales_subset$Weekly_Sales), c(1,3)])
+```
+| 
+| The <span class="highlight">boxplot</span> shows that there is an outlier above the 75th percentile. Based on the maximum weekly sales we have in the data, the outlier was from Store 11 with **_$2,213,519_** sales achieved, which is far beyond any other weekly sales.
+| 
+| As a retailer, we should be curious on whether a <span class="coral-highlight">holiday</span> affects the sales generated? It could be taken as a strategic decision on having more promotions on a holiday week or not.
+
+```{r}
+Sales_by_Holiday <- Sales_subset %>% group_by(Holiday_Flag) %>% summarise(Average_Sales = mean(Weekly_Sales))
+
+print(Sales_by_Holiday)
+
+#Calculate the percentage of gap between the 2 categories
+max_sales <- max(Sales_by_Holiday$Average_Sales)
+min_sales <- min(Sales_by_Holiday$Average_Sales)
+difference_sales <- (max_sales-min_sales)/min_sales
+label_percent()(difference_sales)
+
+```
+| 
+| Apparently, on average, the stores generate higher sales if there is a holiday within that particular week, with a **_7%_** difference as compared to normal week. This suggested that more people tend to visit retail outlets during the week with holidays. Retailer can take the opportunity to do promotion over the week with holidays.
+
+```{r}
+sqldf("select Store, max(Weekly_Sales) as Sales, Holiday_Flag, Date from Sales_subset group by Store")
+
+```
+| 
+| Last but not least, 4 out of these 5 stores had _highest weekly sales_ on the week of <span class="coral-highlight">23 Dec 2011</span>, which is 2 days before _Christmas_. People tend to spend more for Christmas in the United States as it is a popular festive season. The maximum sales of Store 36 is the _lowest_ among these 5 stores, and it happened on the week of 18 March 2011. This is a surprise result which out of our expectation.
+| 
+| In a nutshell, Walmart generally perform better in <span class="coral-highlight">December</span> due to Christmas festive season and <span class="coral-highlight">Store 11</span> has achieved _highest sales_ over the months in 2011 as compared to other stores. Other variables in the dataset do not correlate much to the weekly sales of each store. We shall look into other factors like _location_, _size of the outlet_ etc would affect the sales.
+
+
+</div>
+
+## {-}
