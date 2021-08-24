@@ -1,0 +1,1032 @@
+---
+title: "WQD 7004 GROUP PROJECT"
+author: "Group 3 (Teoh Xu Hao, Chow Hui Ting, Pang Woon Yen)"
+date: "06/06/2021"
+output: html_document
+---
+
+<!-- Change the background color and font color -->
+<body style = "background-color: #202020; color: azure; text-align: justify;">
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Multiple Linear Regression for the Prediction of House Prices {.tabset .tabset-fade .tabset-pills}
+
+<!-- Define some styles that we will use frequently -->
+```{css, echo=FALSE}
+.tab_bg {
+  border: 1px solid azure;
+  padding: 10px;
+}
+
+.header_font {
+  color: burlywood;
+  font-weight: bold;
+}
+
+.subheader {
+  text-decoration: underline;
+  color: coral;
+  font-weight: bold;
+}
+
+.coral-highlight {
+  color: coral;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.green-highlight {
+  color: green;
+  font-style: italic;
+}
+
+.watch-out {
+  background-color: lightpink;
+  border: 3px solid red;
+  font-weight: bold;
+}
+
+.text_center {
+  padding-left: 180px;
+}
+
+```
+<!-- Tab 1 - Introduction -->
+### <h class="header_font">Introduction</h>
+<div class = "tab_bg">
+
+#### Overview
+<div class="alert alert-info">
+**Introduction**
+
+House price floating every now and then. It became difficult to estimate the house price, especially during the pandemic. 
+<p>&nbsp;</p>Regression models are powerful models to describe relationships between variables. We can observe the changes of dependent variables when independent variables change. Multiple Linear Regression (MLR) estimates the relationship between two or more independent variables and one dependent variable. Analysis of Variance (ANOVA) is a subset of MLR. ANOVA estimates how a quantitative dependent variable varies base on the levels of categorical independent variables. 
+<p>&nbsp;</p>This project focuses on exploring the house sales dataset, using regression models to examine the relationship between variables of the dataset and estimate the future house price. 
+</div>
+
+<div class="alert alert-info">
+**Problem Statement**
+
+House price varies based on the condition of itself and the environment. From the number of bedrooms to the location of the house, any variable might be the key that affects the house price the most. This project will use ANOVA and MLR to determine the relation of house situations with sold price and predict the house price. 
+</div>
+
+<div class="alert alert-info">
+**Idendified Questions**
+
+1. Is there a significant difference in the house sold price based on the house variables?
+2. Can we predict the house price with the given attributes of each record of house sold?
+</div>
+
+<div class="alert alert-info">
+**Objectives**
+
+1. To have a basic understanding of the dataset.
+2. To investigate if the condition rate, renovation and city located affect house sold price.
+3. To predict the future house price with at least 70% of accuracy.
+</div>
+
+#### Dataset Information
+<div class="alert alert-success">
+**The table below contains basic information of the dataset:**
+
+|          |
+| ---- |-------------|
+| Title         | KC_Housesales_Data |
+| Year          | 2018 |
+| Source        | https://www.kaggle.com/swathiachath/kc-housesales-data?select=kc_house_data.csv |
+| Purpose       | Predict House sale prices using Multi-Linear Regression |
+| Dimension     | 21 columns x 21613 rows |
+| Description   | The dataset was obtained from Kaggle. The dataset contains house sold prices and house details in King County, an area in the Washington state of the US, from May 2014 to May 2015. |
+</div>
+
+<div class="alert alert-success">
+**The table below describes the 21 variables of the raw dataset:**
+
+| No. | Variable | Description | Datatype  |
+| :---- | :------ |:----------| :---- |
+| 1  | id | - | Numeric |
+| 2  | date | Date of house was sold | String |
+| 3  | price | Price sold | Numeric |
+| 4  | bedrooms |Number of bedroom|Numeric|
+| 5  | bathrooms |Number of bathroom per bedroom|Numeric|
+| 6  | sqft_living|House square footage|Numeric|
+| 7  | sqft_lot |Lot square footage|Numeric|
+| 8  | floors|Floor level|Numeric|
+| 9  | waterfront |House has a view to a waterfront|Numeric|
+| 10 | view |House has been viewed|Numeric|
+| 11 | condition |How good the house condition is: 1=poor; 5=excellent|Numeric|
+| 12 | grade |Grade given by King County: 1=poor; 5=excellent|Numeric|
+| 13 | sqft_above|Square footage of house apart from basement|Numeric|
+| 14 | sqrt_basement|Basement square footage|Numeric|
+| 15 | yr_built |House built year|Numeric|
+| 16 | yr_renovated |House renovated year|Numeric|
+| 17 | zipcode |House zip code|Numeric|
+| 18 | lat | House latitude coordinate|Numeric|
+| 19 | long| House longitude coordinate|Numeric|
+| 20 | sqft_living15|Living room area in 2015 (implies renovated)|Numeric|
+| 21 | sqft_loft15| Lot area in 2015 (implies renovated)|Numeric|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+
+
+</div>
+
+<!-- Tab 2 - Methodology -->
+### <h class="header_font">Methodology</h>
+<div class = "tab_bg">
+| There are 3 methods being carried out on the dataset to achieve our main objectives.
+
+#### <h class = "subheader">Exploratory Data Analysis (EDA)</h>
+
+|     Exploratory Data Analysis, also known as <span class = "coral-highlight">data exploration</span>, is the first step in a data analysis to explore the nature of data by doing some **visualisations**. EDA is a quick and simple analysis where it could help to **determine the underlying pattern, detect outliers or anomalies, and to understand the relationships between variables and hence enable us to extract important factors for the model we are going to build**.
+| 
+|     **Plotting from raw data** allows us to have an overview on the behaviours and the distributions of variables. For instance, <span class = "green-highlight">histogram</span> could be used to visualise the distribution of a numerical variable whereas a <span class = "green-highlight">bar chart</span> could be used to visualise the frequency distribution of a categorical variable.
+| 
+|     <span class = "green-highlight">Box plot</span> could be used to detect outliers for single numerical variable, whereas a <span class = "green-highlight">scatter plot</span> is able to detect an outlier observation between two numerical variables. Other than that, a scatter plot is also good to visualise the relationship or correlation between two variables. Consequently, we are able to detect the important factors which correlated with the dependent variable that we would want to predict.
+| 
+|     R package of *tidyverse* is good for data subsetting, data transforming and data visualisation. The package *ggplot2* is especially useful for EDA when it comes to visualisation, such as histogram, bar chart, box plot etc could be easily done by using ggplot function.
+| 
+|     Example of coding for a simple boxplot:
+```{r fig.align='center'}
+rating <- c(5,2,3,2,4,3,10)
+boxplot(rating, col="yellow")
+title("Boxplot of ratings")
+
+```
+```{r}
+#There is an outlier in the rating data series.
+
+```
+
+---
+
+#### <h class = "subheader">Analysis of Variance (ANOVA)</h>
+
+|     Analysis of variance (ANOVA) is a method used to test if there is significant difference in the means of two or more independent groups or levels of factors. It is categorised into one way ANOVA and two way ANOVA - one way ANOVA is to conduct a hypothesis testing on one independent variable whereas two way ANOVA will involve two or more independent variables.
+| 
+|     The hypothesis testing for ANOVA could be generally mentioned as:
+|         $H_{0}$ (Null Hypothesis):        There is no difference in means among the independent groups of object.
+|         $H_{1}$ (Alternative Hypothesis):  There are at least two independent groups having means which are statistically different from each other.
+| 
+|     The null hypothesis could be expressed in the format of symbol:
+|         $H_{0}: \mu_{1} = \mu_{2} = \mu_{3} = ... = \mu_{k}$ 
+|               where $\mu =$ group mean
+|                       $k =$ number of independent groups
+|     
+|     The test statistic for ANOVA is F-statistic and it is following F-distribution:
+|           $F = \frac{\sum n_{j}(\bar{X_{j}}-\bar{X})^{2}/(k-1)}{\sum\sum(X-\bar{X_{j}})^{2}/(N-k)}$
+|
+|     with the critical value to be found in the table of probability values of F-distribution with degrees of freedom $df_{1} = k-1$ and $df_{2} = N-k$ where $N = n_{1} + n_{2} + ... + n_{k}$. The F-test is also called as Omnibus Test.
+|
+|     However, there are some assumptions to be taken care of before carrying out the ANOVA test:
+|             1. The population from which the sample is drawn is normally distributed.
+|             2. Homogeneity of variance among the groups of independent variable - the variance for each group of samples are approximately the same.
+|             3. All the observations in samples should be independent from each other.
+| 
+|     If the F-statistic is large enough to reject the null hypothesis, we could observe that there is difference between at least two group means. However, ANOVA will not tell us of which two groups are having different means and the degree of difference. 
+| 
+|     A post-hoc Tukey's HSD Test can be conducted to examine the difference lie between which specific groups of object. The Tukey HSD test statistic formula is:
+|               $HSD = \frac{M_{i}-M_{j}}{\sqrt\frac{MS_{w}}{n_{h}}}$
+|               where 
+|                   $M_{i}-M_{j}$ is the difference between the means of pair groups
+|                   $MS_{w}$ is the Mean Square Within and $n$ is the number in the group
+| 
+
+
+---
+
+#### <h class = "subheader">Multiple Linear Regression Analysis (MLR)</h>
+
+|     Multiple Linear Regression Analysis is an inferential analysis to explain the relationship between one *continuous dependent variable (y)* with *two or more independent variables (x)*. Dependent variable is also known as response variable or predicted variable where the value of *y* is to be computed based on the input of *x*, whereas the independent variable is also known as explanatory variable, regressor, or predictor. The independent variables can be continuous or categorical where dummy coded is necessary when there are more than 2 categories.
+| 
+|     MLR is a predictive model which quantifies the relationship between explanatory variables and dependent variable in order to predict the outcome of dependent variable. Example of questions could be answered by MLR analysis are - 
+|       1. Do height and weight affect the blood pressure?
+|       2. Do mileage and the car brand able to predict the sales price of used car?
+| 
+|     <span class = "coral-highlight">Formulation of the hypotheses: </span>. The null hypothesis and alternative hypothesis could be expressed as:
+|         $H_{0}$ (Null Hypothesis):        There is no relationship between explanatory variables and response variable.
+|         $H_{1}$ (Alternative Hypothesis):  There is at least one explanatory variable is associated linearly with the response variable.
+| 
+|     The hypotheses could be written as:
+|         $H_{0}: \beta_{1} = \beta_{2} =...= \beta_{n} = 0$
+|         $H_{1}:$ at least one $\beta_{j} \not= 0$ (for j = 1, 2, ..., n)
+| 
+|     <span class = "coral-highlight">Fit a linear model: </span>Find the best fit regression equation between the explanatory variables and response variable. The estimates of the parameters of explanatory variables can be used to explain how changing one unit in explanatory variables can the response variable changes. Furthermore, the explanatory variables could be examined on whether they are significant related to the response variable by checking on the p-values. If the p-value is less than 0.05, the explanatory variable is said to have significant effect on the prediction of response variable.
+| 
+|         The general equation of MLR:
+|
+|            <span class = "text_center">$Y = \beta_{0} + \beta_{1}X_{1} + \beta_{2}X_{2} + ... + \beta_{n}X{n} + \epsilon$
+|            
+|               where $Y$ - dependent variable
+|                      $X_{n}$ - independent variable
+|                      $\beta_{0}$ - intercept of $Y$ when all $X$s are zero
+|                      $\beta_{n}$ - parameter estimate for each $X_{n}$
+|                      $\epsilon$ - independent error term for the model</span>
+| 
+|     <span class = "coral-highlight">Model accuracy assessment: </span>The coefficient of determination (R-squared) is used to determine how much variation in y (response variable) could be explained by x (explanatory variables). The higher the value of R-squared, the better the model fitting the data. Additionally, Residual standard error (RSE) shows how far the observed values are from the predicted values for response variable, which is a typical sized residual or error. The smaller the RSE, the better is the model.
+| 
+|     <span class = "coral-highlight">Model validity: </span>There are several assumptions of carrying out multiple linear regression analysis. 
+|       1. The values of residuals should be normally distributed by following N(0,1) - independent and have constant variance
+|       2. The relationship between explanatory variables and the response variable is linear
+|       3. The explanatory variables should not be highly correlated to each other - no multicollinearity in the data
+|       4. There should be no biasing data in the analysis
+| 
+|     The diagnostic plots of the fitted model should be examined. The <span class = "green-highlight">residual vs fitted plot</span> should show scattered dots around a horizontal line with no distinct pattern to indicate the relationship between *X* and *Y* is linear. A <span class = "green-highlight">Normal Q-Q Plot</span> is used to determine if the residuals follow a straight line indicating the residuals are normally distributed. The <span class = "green-highlight">Scale-Location Plot</span> shows if residuals are spread evenly or equally along the ranges of predictors. This plot aims to verify the homoscedasticity of the residuals (equal variance). If the plot showing a pattern of ununiform dispersion, the variance of residuals is not homogenous (as shown in Case 2 below).
+
+```{r pressure, echo=FALSE, fig.cap="Scale-Location Plot", fig.align="center", out.width = '80%'}
+knitr::include_graphics("https://data.library.virginia.edu/files/diagnostics3.jpeg")
+```
+| 
+| Lastly, the <span class = "green-highlight">Residuals vs Leverage Plot</span> helps to identify if there is influential case within the dataset, namely leverage. The dashed line will show the boundaries Cook's distance, those cases located outside of dashed line are influential to the regression results. If we remove these cases, the regression model might be significantly changed.
+
+<a href="#top">Back to top</a>
+
+</div>
+
+<!-- Tab 3 - Data Preparation -->
+### <h class="header_font">Data Preparation</h>
+<div class = "tab_bg">
+| There are 2 datasets being used in this project. First - the KC_Housesales_Data from Kaggle and US Zip Codes Database retrieved from simplemaps. 
+
+```{r, echo=FALSE}
+# set working directory
+setwd("C:/Users/woony/OneDrive - Universiti Malaya/WQD 7004/Group Project")
+```
+```{r}
+# import 2 datasets to be stored in 2 different dataframes
+library(readr)
+df_house <- read_csv("kc_house_data.csv")
+
+library(readxl)
+df_zipcode <- read_excel("uszips.xlsx")
+
+
+```
+
+
+
+|   The first 5 rows of each dataset are shown below, as well as the structure of each dataframe.
+```{r}
+# KC_Housesales_Data
+head(df_house)
+colnames(df_house)
+
+# US Zip Codes Database
+head(df_zipcode)
+colnames(df_zipcode)
+
+
+```
+
+#### <h class = "subheader">Data Cleaning</h>
+<div class="alert alert-info">
+|     **Data cleaning for df_house: **
+|           1. Remove unnecessary columns
+|           2. Transform some columns to categorical values
+|           3. Check for missing values
+
+```{r}
+## Removing the unnecessary information
+
+df_house$id <- NULL
+df_house$sqft_living <- NULL
+df_house$sqft_lot <- NULL
+df_house$view <- NULL
+df_house$grade <- NULL
+df_house$view <- NULL
+df_house$sqft_above <- NULL
+df_house$zip <- df_house$zipcode
+df_house$zipcode <- NULL
+df_house$lat <- NULL
+df_house$long <- NULL
+
+## Changing sqft_basement to basement (1 for yes and 0 for no)
+df_house$basement <- df_house$sqft_basement
+df_house$sqft_basement <- NULL
+df_house$basement = ifelse(df_house$basement>0,"1","0")
+
+## Changing yr_built to age
+library("stringr")  
+df_house$date <- str_sub(df_house$date, - 4, - 1) #Extract the year from date of building sold 
+df_house$date <- as.numeric(df_house$date) #changing it to numeric for subtraction operation
+df_house$age <- df_house$date - df_house$yr_built #age of building when sold is calculated
+df_house$date <- NULL
+df_house$yr_built <- NULL
+
+## Changing yr_renovated to renovation (1 for yes and 0 for no)
+df_house$renovation = ifelse(df_house$"yr_renovated">0,"1","0")
+df_house$yr_renovated <- NULL
+
+## Checking for missing values
+sum(is.na(df_house))
+
+## Saving new dataframe in csv
+write.csv(df_house,'house_data.csv',row.names=FALSE)
+
+# Detecting Outliers
+boxplot(df_house$price, ylab = "price")
+boxplot(df_house$bedrooms, ylab = "bedroom")
+
+# reexamine the structure of the dataframe now
+str(df_house)
+
+```
+
+</div>  
+
+<div class="alert alert-info">
+|       **Data cleaning for df_zipcode:**
+|           1. Remove unnecessary columns
+|           2. Remove duplicate rows using zipcode variable
+
+```{r}
+## Removing the unnecessary information
+df_zipcode <- df_zipcode[ -c(2:3,5,7:18) ]
+
+## Removing duplicate rows using the zipcode variable
+library(dplyr)
+df_zipcode %>% distinct(zip, .keep_all= TRUE)
+
+write.csv(df_zipcode,'zipcode.csv',row.names=FALSE)
+```
+</div>
+---
+
+#### <h class = "subheader">Data Merging</h>
+<div class="alert alert-info">
+|   After we have cleaned the df_house and df_zipcode, now we can do data merging to merge the 2 dataframes as there are no city and state_name in the df_house.
+
+```{r}
+# Merging 2 datasets
+df_house <- read_csv("house_data.csv")
+df_zip <- read_csv("zipcode.csv")
+df <- merge(df_house,df_zipcode,by="zip")
+
+# Examine the frequency table of city and state_name
+table(df$city)
+table(df$state_name)
+
+# Since all state name is Washington, we can omit the state_name column
+df$state_name <- NULL
+
+# print the first few rows of the merged data
+head(df, 10)
+str(df)
+
+write.csv(df,'merged.csv',row.names=FALSE)
+
+```
+
+</div>
+
+<a href="#top">Back to top</a>
+</div>
+
+<!-- Tab 4 - Data Analysis -->
+### <h class="header_font">Data Analysis</h> {.tabset}
+<div class = "tab_bg">
+
+#### <h class = "subheader">Exploratory Data Analysis (EDA)</h> {.tabset}
+<div class="alert alert-info">
+```{r}
+## Rearranging the columns so that the price will be the first variable
+df <- df[,c(2:12,1,13)]
+
+## Viewing a Part of the Data
+head(df,10)
+
+## Viewing the structure and summary statistics of the data
+str(df)
+summary(df)
+
+## Checking for the missing values in the data.
+NA_values=data.frame(no_of_na_values=colSums(is.na(df)))
+head(NA_values,13)
+
+# Counting the number of groups with the same zip code and city
+library(dplyr)
+freq_zipcode <- as.data.frame(table(df$zip))
+freq_zipcode <- freq_zipcode %>% rename(zipcode = Var1)
+print(freq_zipcode)
+
+freq_city <- as.data.frame(table(df$city))
+freq_city <- freq_city %>% rename(city_name = Var1)
+print(freq_city)
+```
+</div>
+
+<div class="alert alert-info">
+|   Dividing the data into Train and Test Data by using random sampling method. 70% of the data will be entering to train dataset whereas the rest will be test dataset. The reason of splitting dataset into two being to judge the performance of the prediction model on the test dataset afterwards.
+
+```{r, results=FALSE, message=FALSE, warning=FALSE}
+library(caTools)
+```
+```{r}
+#  set seed to ensure you always have same random numbers generated
+set.seed(123)
+
+# splits the data in the ratio mentioned in SplitRatio. After splitting marks these rows as logical TRUE and the the remaining are marked as logical FALSE
+sample = sample.split(df$zip,SplitRatio = 0.7)
+
+# creates a training dataset named train_data with rows which are marked as TRUE
+train_data =subset(df,sample ==TRUE)
+test_data=subset(df, sample==FALSE)
+
+# check the dimensions of train_data and test_data
+dim(train_data)
+dim(test_data)
+```
+</div>
+
+<div class="alert alert-info">
+
+|       Determining the *association* between the variables.
+
+```{r, results=FALSE, message=FALSE, warning=FALSE}
+library(corrplot)
+```
+```{r}
+cor_data=data.frame(train_data[,1:12])
+cor_data = cor_data[, -c(9,11)]
+correlation=cor(cor_data)
+par(mfrow=c(1, 1))
+corrplot(correlation,method="color")
+```
+
+|       According to our corrplot price is positively correlated with bedroom, bathroom, sqft_living15.
+| 
+|       Draw some *scatter plots* to determine the relationship between positive-correlated variables.
+
+```{r, results=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(grid)
+library(lattice)
+library(gridExtra)
+```
+```{r}
+p1=ggplot(data = train_data, aes(x = bedrooms, y = price)) +
+  geom_jitter() +  geom_smooth(method = "lm", se = FALSE)+labs(title="Scatter plot of Bedrooms and Price", x="Bedrooms",y="Price")
+p2=ggplot(data = train_data, aes(x = bathrooms, y = price)) +
+  geom_jitter() +  geom_smooth(method = "lm", se = FALSE)+labs(title="Scatter plot of Bathrooms and Price", x="Bathrooms",y="Price")
+p3=ggplot(data = train_data, aes(x = floors, y = price)) +
+  geom_jitter() +  geom_smooth(method = "lm", se = FALSE)+labs(title="Scatter plot of Floors and Price", x="Floors",y="Price")
+p4=ggplot(data = train_data, aes(x = sqft_living15, y = price)) +
+  geom_jitter() +  geom_smooth(method = "lm", se = FALSE)+labs(title="Scatter plot of Sqft_living15 and Price", x="Sqft_living15",y="Price")
+
+grid.arrange(p1,p2,p3,p4,nrow=2)
+```
+
+|       From these scatter plots, we can say that the relationship between price (dependent variable) and bedrooms, bathrooms and sqft_living15 (independent variables) are linear and in the positive direction. However, the relationship between price and floors is not obviously linear. 
+| 
+|       The p-value from correlation test can be used to identify whether the correlation is significant.
+
+```{r}
+# create an empty list to store p-value of correlation test
+p_value_df <- data.frame("Explanatory_Variable" = character(0), "p_value" = double(0), stringsAsFactors = FALSE)
+
+
+for (i in 2:ncol(cor_data)) {
+  p_value <- cor.test(cor_data[,1], cor_data[,i])$p.value
+  new_row <- c(names(cor_data[i]), p_value)
+  p_value_df[nrow(p_value_df)+1,] <- new_row
+}
+
+print(p_value_df)
+
+```
+
+|       Based on the p-value from correlation test between price and every single explanatory variable, the relationships seem all to be significant.
+| 
+|       For the 4 categorical variables(waterfront, basement, renovation and city) we draw *boxplots* to understand the relationships.
+
+```{r}
+par(mfrow=c(2, 2))
+boxplot(price~waterfront,data=train_data,main="Price vs Waterfront", xlab="waterfront",ylab="price",col="orange",border="brown")
+boxplot(price~basement,data=train_data,main="Price vs Basement", xlab="basement",ylab="price",col="orange",border="brown")
+boxplot(price~renovation,data=train_data,main="Price vs Renovation", xlab="renovation",ylab="price",col="orange",border="brown")
+boxplot(price~city,data=train_data,main="Price vs City", xlab="city",ylab="price",col="orange",border="brown")
+```
+
+|       There seem to have relationships between price with these 4 categorical variables.
+|       
+|       Checking for outliers in the dependent variable(price) using a boxplot.
+
+```{r}
+ggplot(data=train_data)+geom_boxplot(aes(x=bedrooms,y=price))
+
+outliers=boxplot(train_data$price,plot=FALSE)$out
+outliers_data=train_data[which(train_data$price %in% outliers),]
+train_data1= train_data[-which(train_data$price %in% outliers),]
+
+par(mfrow=c(1, 2))
+# Plot of original data without outliers.
+plot(train_data$bedrooms, train_data$price, main="With Outliers", xlab="bedrooms", ylab="price", pch="*", col="red", cex=2)
+abline(lm(price ~ bedrooms, data=train_data), col="blue", lwd=3, lty=2)
+
+# Plot of data after removed outliers. Note the change of slope.
+plot(train_data1$bedrooms, train_data1$price, main="Outliers removed", xlab="bedrooms", ylab="price", pch="*", col="red", cex=2)
+abline(lm(price ~bedrooms, data=train_data1), col="blue", lwd=3, lty=2)
+```
+
+|       Notice the change in slope of the best fit line after removing the outliers. 
+|       It is obvious that if we remove the outliers to train the model, our predictions would be exaggerated (high error) for larger values of price because of the larger slope.
+|       Therefore we continue with the entire data.
+
+</div>
+<a href="#top">Back to top</a>
+
+#### <h class = "subheader">Analysis of Variance (ANOVA)</h> {.tabset}
+##### Description 
+<div class="alert alert-info">
+**Idendified Questions**
+
+- Is there a significant difference in the house sold price based on the house variables?
+
+<p>&nbsp;</p>
+
+**Objective**
+
+- To investigate if the condition rate, renovation and city located affect house sold price.
+
+<p>&nbsp;</p>
+In this section will focus on apply **One-way ANOVA** to find out if the categorical variables caused a difference in the mean of house sold price. The null hypothesis (H0) of the ANOVA is no difference in means, and the alternate hypothesis (H1) is that the means are different from one another. ANOVA assumes that each observation is randomly sampled, independent, normally distributed, and with unknown but equal variances.
+<p>&nbsp;</p>
+ANOVA only reveals that are different between group means. Hence this section will also apply Tukey’s Honestly Significant Difference (Tukey’s HSD) test to tell which groups are statistically different from another.
+</div>
+
+<div class="alert alert-info">
+**Steps:**
+<p>&nbsp;</p>
+1. Analysis the factor level of the variable.
+2. Perform ANOVA Test.
+    + The ANOVA model summary lists the independent variable being tested in the model and the model residuals (The variation not explained by the independent variables is called residual variance.)
+3. Perform Tukey’s HS Test. 
+4. Boxplot the price and variable to check the distribution.
+</div>
+
+<div class="alert alert-info">
+Table below shows the variable that will be analysis. Not all of the variables from dataset were used in this analysis.
+
+| Variable | Description | Level |
+| :----- | :------ | :-----|
+| condition | How good the house condition is | 1 to 5 where 1=worst; 5=best |
+| renovation | Indicate if the house has been renovated | 1=Yes; 0=NO |
+| city | Indicate which city the house located | List of city name |
+</div>
+
+##### Packages & Dataset
+**Loading Packages Library**
+<div class="alert alert-info">
+```{r, results=FALSE, message=FALSE, warning=FALSE }
+library(ggplot2)
+library(ggpubr)
+library(gridExtra)
+library(tidyverse)
+library(broom)
+library(AICcmodavg)
+library(dplyr)
+```
+</div>
+
+**Loading dataset**
+<div class="alert alert-info">
+```{r }
+# Read the variables that will be analyse later as factor
+house <- read.csv('merged.csv', header = TRUE, stringsAsFactors=T,
+                  colClasses=c(rep('numeric', 6), 'factor', rep('numeric', 4),rep('factor', 2)))
+glimpse(house)
+```
+</div>
+
+##### Price VS Condition
+This section examine if there is a statistical difference between the mean of the house sold price according to the rate of condition given to the house.
+
+<p>&nbsp;</p>
+**1.Overview of the `condition` variable**
+<div class="alert alert-info">
+```{r }
+#Calculate frequency, mean and standard deviation
+house %>% 
+  group_by(condition) %>% 
+  summarise(condition_freq = n(), 
+            price_mean = mean(price, na.rm = TRUE), 
+            price_sd = sd(price, na.rm = TRUE))
+```
+</div>
+
+**2.ANOVA Test**
+<div class="alert alert-info">
+Hypothesis:
+
+- H0: The mean `price` is equal for all levels of `condition` categories.
+- H1: At least one of the `condition` categories has a mean `price` that is not the same as the other `condition` categories.
+
+<p>&nbsp;</p>
+The p-value of the `condition` variable is low (p < 0.001, indicated by the '***'), which implies that rate of `condition` gives impact on the house sold `price`. Hence the H0 is rejected. There is a significant difference in the average price of house based on the condition of house.
+```{r }
+one_way <- aov(price ~ condition, data = house)
+summary(one_way)
+```
+</div>
+
+**3.Tukey test**
+<div class="alert alert-info">
+Base on the test results, there are statistically significant differences (p < 0.05) between condition groups 3-1 (3 and 1), 5-1, 3-2, 4-2, 5-2, 4-3, 5-3, 5-4. The difference between condition groups 2-1 and 4-1 are not statistically significant. 
+```{r }
+TukeyHSD(one_way)
+```
+</div>
+
+**4.Boxplot of the distribution of `price` by `condition`:**
+<div class="alert alert-info">
+```{r }
+options(scipen=999)
+ggboxplot(house, x = "condition", y = "price", ylim=c(78000,7700000))
+```
+
+
+
+</div>
+<a href="#top">Back to top</a>
+
+
+
+
+##### Price VS Renovation
+This section examine if there is a statistical difference between the mean of the house sold price and renovation state of the house.
+
+<p>&nbsp;</p>
+**1.Overview of the `renovation` variable**
+<div class="alert alert-info">
+```{r }
+#Calculate frequency, mean and standard deviation
+house %>% 
+  group_by(renovation) %>% 
+  summarise(renovation_freq = n(), 
+            price_mean = mean(price, na.rm = TRUE), 
+            price_sd = sd(price, na.rm = TRUE))
+```
+</div>
+
+**2.ANOVA Test**
+<div class="alert alert-info">
+Hypothesis:
+
+- H0: The mean `price` is equal for all levels of `renovation` categories.
+- H1: At least one of the `renovation` categories has a mean `price` that is not the same as the other `renovation` categories.
+
+<p>&nbsp;</p>
+The p-value of the `renovation` variable is low (p < 0.001, indicated by the '***'), which implies that state of `renovation` gives impact on the house sold `price`. Hence the H0 is rejected. There is a significant difference in the average price of house based on the renovation state of the house.
+```{r }
+one_way <- aov(price ~ renovation, data = house)
+summary(one_way)
+```
+</div>
+
+**3.Tukey test**
+<div class="alert alert-info">
+Base on the test results, there are statistically significant differences (p < 0.05) between renovation group 1 and 0. 
+```{r }
+TukeyHSD(one_way)
+```
+</div>
+
+**4.Boxplot of the distribution of `price` by `renovation`:**
+<div class="alert alert-info">
+```{r }
+options(scipen=999)
+ggboxplot(house, x = "renovation", y = "price", ylim=c(78000,7700000))
+```
+
+
+
+</div>
+<a href="#top">Back to top</a>
+
+
+
+
+##### Price vs City
+This section examine if there is a statistical difference between the mean of the house sold price according to the location of city of the house.
+
+<p>&nbsp;</p>
+**1.Overview of the `city` variable**
+<div class="alert alert-info">
+```{r }
+#Calculate frequency, mean and standard deviation
+options(dplyr.print_max = 1e9)
+house %>% 
+  group_by(city) %>% 
+  summarise(city_freq = n(), 
+            price_mean = mean(price, na.rm = TRUE), 
+            price_sd = sd(price, na.rm = TRUE))
+```
+</div>
+
+**2.ANOVA Test**
+<div class="alert alert-info">
+Hypothesis:
+
+- H0: The mean `price` is equal for all levels of `city` categories.
+- H1: At least one of the `city` categories has a mean `price` that is not the same as the other `city` categories.
+
+<p>&nbsp;</p>
+The p-value of the `city` variable is low (p < 0.001, indicated by the '***'), which implies that location of `city` gives impact on the house sold `price`. Hence the H0 is rejected. There is a significant difference in the average price of house based on the location of house.
+```{r }
+one_way <- aov(price ~ city, data = house)
+summary(one_way)
+```
+</div>
+
+**3.Tukey test**
+<div class="alert alert-info">
+There are statistically significant differences between `city` groups with p < 0.05.
+```{r }
+TukeyHSD(one_way)
+```
+</div>
+
+**4.Boxplot of the distribution of `price` by `city`:**
+<p>&nbsp;</p>
+Note that y-axis represents `city` and x-axis represent `price`.
+<div class="alert alert-info">
+```{r }
+options(scipen=999)
+p <- ggboxplot(house, x = "city", y = "price", ylim=c(78000,7700000))
+p + coord_flip()
+```
+
+
+
+</div>
+<a href="#top">Back to top</a>
+
+
+
+#### <h class = "subheader">Multiple Linear Regression (MLR)</h> {.tabset}
+##### Description 
+<div class="alert alert-info">
+**Idendified Questions**
+
+- Can we predict the house price with the given attributes of each record of house sold?
+
+<p>&nbsp;</p>
+
+**Objective**
+
+- To predict the future house price with at least 70% of accuracy.
+
+<p>&nbsp;</p>
+Multiple linear regression will be conducted to get a prediction model on the house price based on the selected variables `{bedrooms+bathrooms+floors+waterfront+condition+sqft_living15+sqft_lot15+basement+age+renovation}`. We will apply the machine learning algorithm on the multiple linear regression analysis. 
+
+</div>
+
+<div class="alert alert-info">
+**Steps:**
+<p>&nbsp;</p>
+1. Construct a linear model
+2. Influential points detection
+    - Remove outliers but keep the influential points for further analysis
+3. Regression diagnostics - check on assumptions validity 
+4. Prediction of house price - check on the accuracy of the model
+</div>
+
+
+##### Model Fitting
+
+<div class="alert alert-info">
+```{r, results=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(caret)
+library(leaps)
+library(MASS)
+```
+```{r}
+# Fit the full model
+full.model <- lm(price~bedrooms+bathrooms+floors+waterfront+condition+sqft_living15+sqft_lot15+basement+age+renovation, 
+             data=train_data)
+
+summary(full.model)
+
+# stepwise regression
+fit <- lm(price~bedrooms+bathrooms+floors+waterfront+condition+sqft_living15+sqft_lot15+basement+age+renovation, 
+             data=train_data)
+step <- stepAIC(fit, direction="both")
+step$anova
+```
+```{r, echo=FALSE, results='hide'}
+full_rsq = summary(full.model)$r.squared
+
+
+```
+
+|       The full model of multiple linear regression model is <span class="green-highlight">significant</span> with `r toString(full_rsq)` as the R-squared value. The relationships between these variables with price are considered strong with all significant p-values. Stepwise regression also shows that all variables should be retained in the model. We may try to remove *sqft_lot15* from the model as the p-value at 0.048 is relatively higher compared to other variables.
+
+```{r}
+lm1 <- lm(price~bedrooms+bathrooms+floors+waterfront+condition+sqft_living15+basement+age+renovation, 
+             data=train_data)
+
+summary(lm1)
+```
+
+|       Since the adjusted R-squared still the same, we may continue with the model without sqft_lot15. Now, we try to train the model using `caret` package.
+
+```{r}
+# train the model
+train.model <- train(price~bedrooms+bathrooms+floors+waterfront+condition+sqft_living15+basement+age+renovation, 
+             data=train_data, method="lm")
+
+summary(train.model)
+
+# display the R-squared value
+train.model_rsq <- summary(train.model$finalModel)$r.squared
+
+# show the bootstrap results
+train.model
+
+# store the results of bootstrap in a dataframe
+train.model_results <- as.data.frame(train.model$results)
+
+```
+|       The unrealistic R-squared value is `r toString(train.model_rsq)`. Besides, the caret package by default does the bootstrap resampling with <span class="green-highlight">25 repetitions</span>, the sample data were drawn with replacement. The realistic R-squared value after bootstrapping is `r toString(train.model_results$Rsquared)`, which is slightly **lower** than the train model shown just now.
+| 
+
+<p>&nbsp;</p>
+
+</div>
+
+<a href="#top">Back to top</a>
+
+##### Influential Points Detection
+
+<div class="alert alert-info">
+|       <span class="coral-highlight">Cook's distance</span> can be used to detect the **influential points** in the model.
+
+```{r}
+cooksd <- cooks.distance(lm1)
+cat("The mean of Cook's distance is ", mean(cooksd))
+
+# visualize the Cook's distance in a plot
+# par(mfrow=c(1, 1))
+# plot(cooksd, main="Influential Obs by Cooks distance",xlim=c(0,25000),ylim=c(0,0.1))
+# axis(1, at=seq(0, 25000, 5000))
+# axis(2, at=seq(0, 0.1, 0.0001))
+# abline(h = 4*mean(cooksd, na.rm=T), col="green")  
+# text(x=1:length(cooksd)+1,y=cooksd,labels=ifelse(cooksd>4*mean(cooksd,na.rm=T),names(cooksd),""), col="red")
+
+par(mfrow=c(1, 1))
+plot(cooksd, main="Influential Obs by Cooks distance")
+abline(h = 4*mean(cooksd, na.rm=T), col="green")  
+text(x=1:length(cooksd)+1,y=cooksd,labels=ifelse(cooksd>4*mean(cooksd,na.rm=T),names(cooksd),""), col="red")
+```
+
+|       
+|       Identify the position of influential points in the data.
+
+```{r}
+# any point that have Cook's distance greater than 4 times of mean will be considered as influential
+influential <- as.numeric(names(cooksd)[(cooksd > 4*mean(cooksd, na.rm=T))])  
+
+# influential row numbers
+head(train_data[influential, ])
+
+influential_data <- train_data[influential, ]
+```
+
+```{r}
+# inner join outliers_data and influential_data
+influential_outliers <- inner_join(outliers_data,influential_data)
+
+# remove outliers_data from train_data but keep the influential_data
+train_data2 <- rbind(train_data1,influential_outliers)
+
+# relabel the index of train_data2
+row.names(train_data2) <- NULL
+
+```
+
+|       There are `r toString(nrow(influential_outliers))` outliers yet influential observations in the train data. The outliers_data is removed but influential_outliers should be kept. Remodel the data by using `train_data2`.
+
+```{r}
+lm2 <- lm(price~bedrooms+bathrooms+floors+waterfront+condition+sqft_living15+basement+age+renovation, 
+             data=train_data2)
+
+summary(lm2)
+
+```
+
+|       The <span class="coral-highlight">Residual Standard Error</span> decreased as compared to the model with outliers_data. The model with revised data is <span class="green-highlight">significant</span> with all the variables strongly related to price. 
+
+<p>&nbsp;</p>
+
+</div>
+<a href="#top">Back to top</a>
+
+##### Regression Diagnostics
+
+<div class="alert alert-info">
+|       The assumptions of the model need to be checked. 
+```{r}
+# Residual diagnostics with the 4 plot
+par(mfrow = c(2, 2))
+plot(lm2)
+
+```
+
+|       <span class="coral-highlight">Residual vs Fitted Plot</span> shows scatted values around indicated the relationship between price and predictors is linear, <span class="coral-highlight">Normal Q-Q Plot</span> shows a straight line indicated the residuals are normally distributed, whereas the <span class="coral-highlight">Scale-Location plot</span> shows an approximately uniform dispersion of the fitted values, hence the homoscedasticity of the residuals (equal variance) has been checked. <span class="coral-highlight">Residuals vs Leverage Plot</span> shows there are no leverage out of the boundaries.
+| 
+|    
+</div>
+
+##### Multicollinearity Test
+
+<div class="alert alert-info">
+|       Multicollinearity can be checked with multiple ways, one of the methods is by checking the Variance Inflation Factor (VIF). If the VIF value is greater than 4, there is investigation needed. If VIF above 10, it indicated there are serious multicollinearity between the predictors.
+```{r, message=FALSE, warning=FALSE}
+library(car)
+vif(lm2)
+
+```
+
+|       There is <span class="green-highlight">no multicollinearity</span> in the model.
+|   
+|   
+</div>
+
+##### Accuracy of the Model on Prediction
+
+<div class="alert alert-info">
+**Prediction on Train Data**
+```{r}
+# fitted values of train data
+pred=lm2$fitted.values
+
+# store the actual price and fitted price in a data frame
+actual_fitted=data.frame(actual=train_data2$price, predicted=pred)
+
+# find the mean of absolute difference % between fitted values and actual values
+abs_diff = mean(abs(actual_fitted$actual-actual_fitted$predicted)/actual_fitted$actual)
+
+# accuracy of the model
+accuracy=1-abs_diff
+accuracy
+
+```
+|       The <span class="coral-highlight">accuracy of the model on train data</span> is **70.45%**.
+|   
+**Prediction on Test Data**
+
+```{r}
+# use the model to predict price for test data
+pred_test=predict(newdata=test_data, lm2)
+
+# store the actual price and predicted price in a data frame
+actual_fitted_test=data.frame(actual=test_data$price, predicted=pred_test)
+
+# find the mean of absolute difference % between predicted values and actual values
+abs_diff_test = mean(abs(actual_fitted_test$actual-actual_fitted_test$predicted)/actual_fitted_test$actual)
+
+# accuracy of the prediction
+accuracy=1-abs_diff_test
+accuracy
+```
+
+|       The accuracy of the prediction is at **69.3%**.
+</div>
+
+
+</div>
+
+<!-- Tab 5 - Conclusion -->
+### <h class="header_font">Conclusion</h>
+<div class = "tab_bg">
+| 
+|       The analysis was conducted by using the house price dataset from Kaggle, contains data for houses located in the state of Washington. The results from **One-way ANOVA test** show that there is <span class="coral-highlight">significant difference</span> on the average house price among houses with different *conditions*. Besides, a *renovated* house tends to have a different mean price as compared to a non-renovated house. There are multiple cities in the state of Washington, the dataset contained house price records from 24 cities. The One-way ANOVA test shows that there is significant difference in the average house price at different *cities*. Hence, these 3 variables would be significant factors in deciding the selling price of a house.
+|   
+|       The **multiple linear regression** model shows that `bedrooms`, `bathrooms`, `floors`, `waterfront`, `condition`, `sqft_living15`, `basement`, `age`, `renovation` are <span class="coral-highlight">significant factors</span> that affecting the house price. The prediction model able to predict the house price in Washington state by taking into account the 9 variables above at approximately 70% of accuracy.
+|   
+|       Further analysis can be done:
+|             1. perform non-linear regression
+|             2. perform robust regression
+
+
+
+</div>
+
